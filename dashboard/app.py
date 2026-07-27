@@ -12,6 +12,8 @@ import pandas as pd
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+import adx_store  # noqa: E402
+import bands_store  # noqa: E402
 import config  # noqa: E402
 import db  # noqa: E402
 import fetch_tv  # noqa: E402
@@ -20,8 +22,35 @@ from ingest import ingest_one  # noqa: E402
 
 st.set_page_config(page_title="Sector Strength Dashboard", layout="wide")
 
-STRONG, NEUTRAL, WEAK = config.STRONG, config.NEUTRAL, config.WEAK
-BAND_ORDER = [STRONG, NEUTRAL, WEAK]
+st.markdown(
+    """
+    <style>
+    .table-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 0.5rem;
+    }
+    .table-scroll table { border-collapse: collapse; }
+    .table-scroll th, .table-scroll td {
+        padding: 8px 14px;
+        white-space: nowrap;
+    }
+    @media (max-width: 640px) {
+        .block-container { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+        h1 { font-size: 1.5rem !important; }
+        h3 { font-size: 1.1rem !important; }
+        .table-scroll th, .table-scroll td {
+            padding: 6px 10px;
+            font-size: 0.82rem;
+        }
+        [data-testid="stCaptionContainer"] { font-size: 0.75rem; }
+        div[data-testid="column"] { min-width: 100% !important; }
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 ANY = "Any"
 
 tf_order = list(config.TIMEFRAMES.keys())
@@ -92,41 +121,81 @@ if df.empty:
     st.stop()
 
 # ---------------------------------------------------------------------------
-# Sidebar: user-configurable thresholds + colors
+# Sidebar: user-configurable, dynamic number of classification bands
 # ---------------------------------------------------------------------------
-st.sidebar.header("Classification settings")
+st.sidebar.header("Classification bands")
+st.sidebar.caption("A value belongs to the highest band whose minimum it clears.")
 
-strong_threshold = st.sidebar.number_input(
-    "Strong threshold (RSI >)", min_value=0.0, max_value=100.0, value=config.STRONG_THRESHOLD, step=1.0
+bands = bands_store.load_bands()  # sorted ascending by min
+
+for band in sorted(bands, key=lambda b: -b["min"]):
+    cols = st.sidebar.columns([1, 4, 1])
+    cols[0].markdown(
+        f'<div style="width:22px; height:22px; border-radius:4px; background:{band["color"]}; margin-top:6px;"></div>',
+        unsafe_allow_html=True,
+    )
+    cols[1].write(f"**{band['name']}** (RSI ≥ {band['min']:.0f})")
+    if cols[2].button("✕", key=f"remove_band_{band['name']}", help=f"Remove {band['name']}"):
+        remaining = [b for b in bands if b["name"] != band["name"]]
+        if remaining:
+            bands_store.save_bands(remaining)
+            st.rerun()
+        else:
+            st.sidebar.error("You need at least one band.")
+
+st.sidebar.caption("Add a band")
+add_cols = st.sidebar.columns([3, 2, 2])
+new_band_name = add_cols[0].text_input("Name", key="new_band_name", label_visibility="collapsed", placeholder="Name")
+new_band_min = add_cols[1].number_input("Min", key="new_band_min", value=50.0, step=1.0, label_visibility="collapsed")
+new_band_color = add_cols[2].color_picker("Color", key="new_band_color", value="#3288bd", label_visibility="collapsed")
+if st.sidebar.button("Add band", key="add_band_btn"):
+    if new_band_name.strip():
+        bands_store.add_band(new_band_name.strip(), new_band_min, new_band_color)
+        st.rerun()
+    else:
+        st.sidebar.error("Give the new band a name.")
+
+st.sidebar.divider()
+
+# ---------------------------------------------------------------------------
+# Sidebar: ADX highlight (independent of RSI band colors)
+# ---------------------------------------------------------------------------
+st.sidebar.header("ADX highlight")
+st.sidebar.caption("Flags a strong trend (high ADX) with its own color, separate from the RSI bands.")
+
+adx_cfg = adx_store.load_config()
+adx_cols = st.sidebar.columns([2, 1])
+adx_threshold_input = adx_cols[0].number_input(
+    "ADX >", min_value=0.0, max_value=100.0, value=float(adx_cfg["threshold"]), step=1.0, label_visibility="collapsed"
 )
-weak_threshold = st.sidebar.number_input(
-    "Weak threshold (RSI <)", min_value=0.0, max_value=100.0, value=config.WEAK_THRESHOLD, step=1.0
-)
-if weak_threshold >= strong_threshold:
-    st.sidebar.error("Weak threshold must be lower than the Strong threshold.")
-    st.stop()
+adx_color_input = adx_cols[1].color_picker("Color", value=adx_cfg["color"], label_visibility="collapsed")
+if st.sidebar.button("Save ADX setting", key="save_adx_btn"):
+    adx_store.save_config(adx_threshold_input, adx_color_input)
+    st.rerun()
 
-st.sidebar.subheader("Band colors")
-strong_color = st.sidebar.color_picker("Strong color", "#1a9850")
-neutral_color = st.sidebar.color_picker("Neutral color", "#e6b800")
-weak_color = st.sidebar.color_picker("Weak color", "#d73027")
+ADX_THRESHOLD = adx_cfg["threshold"]
+ADX_COLOR = adx_cfg["color"]
 
-BAND_COLORS = {STRONG: strong_color, NEUTRAL: neutral_color, WEAK: weak_color}
-BAND_LABELS = {
-    STRONG: f"Strong — RSI > {strong_threshold:.0f}",
-    NEUTRAL: f"Neutral — RSI {weak_threshold:.0f}-{strong_threshold:.0f}",
-    WEAK: f"Weak — RSI < {weak_threshold:.0f}",
-}
+st.sidebar.divider()
+
+BAND_ORDER = [b["name"] for b in sorted(bands, key=lambda b: -b["min"])]
+BAND_COLORS = {b["name"]: b["color"] for b in bands}
+
+
+def _band_label(band, bands_sorted):
+    idx = bands_sorted.index(band)
+    if idx == len(bands_sorted) - 1:
+        return f"{band['name']} — RSI ≥ {band['min']:.0f}"
+    return f"{band['name']} — RSI {band['min']:.0f}-{bands_sorted[idx + 1]['min']:.0f}"
+
+
+BAND_LABELS = {b["name"]: _band_label(b, bands) for b in bands}
 
 
 def classify(rsi):
     if pd.isna(rsi):
         return None
-    if rsi > strong_threshold:
-        return STRONG
-    if rsi < weak_threshold:
-        return WEAK
-    return NEUTRAL
+    return bands_store.classify(rsi, bands)
 
 
 # ---------------------------------------------------------------------------
@@ -152,19 +221,13 @@ st.caption("As of — " + " | ".join(f"{tf_names[tf]}: {d.date()}" for tf, d in 
 # ---------------------------------------------------------------------------
 st.subheader("Filter by Monthly-Weekly-Daily pattern")
 
-PRESETS = {
-    "All Strong (60-60-60)": (STRONG, STRONG, STRONG),
-    "M+W Strong, D Weak (60-60-40)": (STRONG, STRONG, WEAK),
-    "M Strong, W+D Weak (60-40-40)": (STRONG, WEAK, WEAK),
-    "M+W Weak, D Strong (40-40-60)": (WEAK, WEAK, STRONG),
-    "All Weak (40-40-40)": (WEAK, WEAK, WEAK),
-}
+PRESETS = {f"All {name}": (name, name, name) for name in BAND_ORDER}
 
 preset_choice = st.selectbox("Quick pattern", [ANY] + list(PRESETS.keys()))
 preset_bands = PRESETS.get(preset_choice, (ANY, ANY, ANY))
 
 filter_cols = st.columns(3)
-band_options = [ANY, STRONG, NEUTRAL, WEAK]
+band_options = [ANY] + BAND_ORDER
 monthly_filter = filter_cols[0].selectbox("Monthly (M)", band_options, index=band_options.index(preset_bands[0]))
 weekly_filter = filter_cols[1].selectbox("Weekly (W)", band_options, index=band_options.index(preset_bands[1]))
 daily_filter = filter_cols[2].selectbox("Daily (D)", band_options, index=band_options.index(preset_bands[2]))
@@ -191,28 +254,40 @@ if filter_is_active:
         f"→ {len(matching_sectors)} sector(s) match"
     )
 
+def adx_html(adx_value):
+    if adx_value > ADX_THRESHOLD:
+        return f'<b style="color:{ADX_COLOR};">ADX {adx_value:.2f} ▲</b>'
+    return f'ADX {adx_value:.2f}'
+
+
 # ---------------------------------------------------------------------------
 # Board
 # ---------------------------------------------------------------------------
 st.subheader("All Timeframes — One Board")
-legend = " &nbsp;&nbsp; ".join(
-    f'<span style="border-left:6px solid {BAND_COLORS[b]}; padding-left:6px;">{BAND_LABELS[b]}</span>'
+legend_items = "".join(
+    f'<span style="border-left:6px solid {BAND_COLORS[b]}; padding-left:6px; white-space:nowrap;">{BAND_LABELS[b]}</span>'
     for b in BAND_ORDER
 )
-st.markdown(legend, unsafe_allow_html=True)
-st.write("")
+legend_items += (
+    f'<span style="border-left:6px solid {ADX_COLOR}; padding-left:6px; white-space:nowrap;">'
+    f'Strong trend — ADX &gt; {ADX_THRESHOLD:.0f}</span>'
+)
+st.markdown(
+    f'<div style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:8px;">{legend_items}</div>',
+    unsafe_allow_html=True,
+)
 
 rows_to_show = matching_sectors if filter_is_active else sectors
 
 if not rows_to_show:
     st.info("No sectors match this pattern.")
 else:
-    header_cells = "".join(f'<th style="padding:8px 14px; text-align:left;">{tf_names[tf]} ({tf})</th>' for tf in tf_order)
+    header_cells = "".join(f'<th style="text-align:left;">{tf_names[tf]} ({tf})</th>' for tf in tf_order)
     table_html = f"""
-    <table style="width:100%; border-collapse:collapse;">
+    <div class="table-scroll"><table style="width:100%;">
     <thead>
     <tr style="border-bottom:2px solid #444;">
-    <th style="padding:8px 14px; text-align:left;">Sector</th>
+    <th style="text-align:left;">Sector</th>
     {header_cells}
     </tr>
     </thead>
@@ -220,22 +295,22 @@ else:
     """
 
     for sector in rows_to_show:
-        table_html += f'<tr style="border-bottom:1px solid #333;"><td style="padding:8px 14px; font-weight:700;">{sector}</td>'
+        table_html += f'<tr style="border-bottom:1px solid #333;"><td style="font-weight:700;">{sector}</td>'
         for tf in tf_order:
             r = cell_lookup.get((sector, tf))
             if r is None:
-                table_html += '<td style="padding:8px 14px;">—</td>'
+                table_html += '<td>—</td>'
                 continue
             color = BAND_COLORS.get(r["classification"], "#888")
             table_html += (
-                f'<td style="padding:8px 14px; background:{color}2b; border-left:4px solid {color};">'
-                f'RSI {r["rsi"]:.2f} &nbsp; RSI-MA {r["rsi_ma"]:.2f} &nbsp; ADX {r["adx"]:.2f}'
+                f'<td style="background:{color}2b; border-left:4px solid {color}; white-space:normal;">'
+                f'RSI {r["rsi"]:.2f} &nbsp; RSI-MA {r["rsi_ma"]:.2f} &nbsp; {adx_html(r["adx"])}'
                 f'<br/><span style="opacity:0.75;">{r["classification"]}</span>'
                 f'</td>'
             )
         table_html += "</tr>"
 
-    table_html += "</tbody></table>"
+    table_html += "</tbody></table></div>"
     st.markdown(table_html, unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------------
@@ -246,14 +321,31 @@ st.subheader("Day-to-Day Comparison (Daily)")
 daily_df = df[df["timeframe"] == "1D"].copy()
 daily_df["classification"] = daily_df["rsi"].apply(classify)
 available_dates = sorted(daily_df["date"].dt.date.unique(), reverse=True)
+min_date, max_date = min(available_dates), max(available_dates)
 
-default_dates = available_dates[: min(5, len(available_dates))]
-selected_dates = st.multiselect(
-    "Dates to compare",
-    options=available_dates,
-    default=default_dates,
-    format_func=lambda d: d.isoformat(),
-)
+pick_mode = st.radio("Pick", ["Specific dates", "Date range"], horizontal=True, key="day_pick_mode")
+
+if pick_mode == "Date range":
+    range_value = st.date_input(
+        "Range",
+        value=(max(min_date, available_dates[min(4, len(available_dates) - 1)]), max_date),
+        min_value=min_date,
+        max_value=max_date,
+    )
+    if isinstance(range_value, tuple) and len(range_value) == 2:
+        range_start, range_end = range_value
+        selected_dates = [d for d in available_dates if range_start <= d <= range_end]
+    else:
+        selected_dates = []
+        st.info("Pick both a start and end date.")
+else:
+    default_dates = available_dates[: min(5, len(available_dates))]
+    selected_dates = st.multiselect(
+        "Dates to compare",
+        options=available_dates,
+        default=default_dates,
+        format_func=lambda d: d.isoformat(),
+    )
 
 if not selected_dates:
     st.info("Select at least one date to compare.")
@@ -265,13 +357,13 @@ else:
     }
 
     header_cells = "".join(
-        f'<th style="padding:8px 14px; text-align:left;">{d.isoformat()}</th>' for d in selected_dates_sorted
+        f'<th style="text-align:left;">{d.isoformat()}</th>' for d in selected_dates_sorted
     )
     day_table_html = f"""
-    <table style="width:100%; border-collapse:collapse;">
+    <div class="table-scroll"><table style="width:100%;">
     <thead>
     <tr style="border-bottom:2px solid #444;">
-    <th style="padding:8px 14px; text-align:left;">Sector</th>
+    <th style="text-align:left;">Sector</th>
     {header_cells}
     </tr>
     </thead>
@@ -279,22 +371,22 @@ else:
     """
 
     for sector in sectors:
-        day_table_html += f'<tr style="border-bottom:1px solid #333;"><td style="padding:8px 14px; font-weight:700;">{sector}</td>'
+        day_table_html += f'<tr style="border-bottom:1px solid #333;"><td style="font-weight:700;">{sector}</td>'
         for d in selected_dates_sorted:
             r = day_cell_lookup.get((sector, d))
             if r is None:
-                day_table_html += '<td style="padding:8px 14px;">—</td>'
+                day_table_html += '<td>—</td>'
                 continue
             color = BAND_COLORS.get(r["classification"], "#888")
             day_table_html += (
-                f'<td style="padding:8px 14px; background:{color}2b; border-left:4px solid {color};">'
+                f'<td style="background:{color}2b; border-left:4px solid {color}; white-space:normal;">'
                 f'RSI {r["rsi"]:.2f} &nbsp; ADX {r["adx"]:.2f}'
                 f'<br/><span style="opacity:0.75;">{r["classification"]}</span>'
                 f'</td>'
             )
         day_table_html += "</tr>"
 
-    day_table_html += "</tbody></table>"
+    day_table_html += "</tbody></table></div>"
     st.markdown(day_table_html, unsafe_allow_html=True)
 
 with st.expander("Raw data"):

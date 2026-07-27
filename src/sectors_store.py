@@ -5,10 +5,10 @@ Falls back to config.py's hardcoded SECTORS on first run.
 """
 
 import json
+from pathlib import Path
 
-import config
-
-SECTORS_JSON = config.PROJECT_ROOT / "data" / "sectors.json"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+SECTORS_JSON = PROJECT_ROOT / "data" / "sectors.json"
 
 _DEFAULTS = {
     "CNXMETAL": ["CNXMETAL", "NSE"],

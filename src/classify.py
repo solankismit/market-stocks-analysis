@@ -1,13 +1,10 @@
-"""Bucket a sector/timeframe reading into Strong / Neutral / Weak based on RSI."""
+"""Bucket a sector/timeframe RSI reading into whatever bands the user has configured
+(see bands_store.py — fully dynamic, editable from the dashboard sidebar)."""
 
-import config
+import bands_store
 
 
 def classify_rsi(rsi):
     if rsi is None:
         return None
-    if rsi > config.STRONG_THRESHOLD:
-        return config.STRONG
-    if rsi < config.WEAK_THRESHOLD:
-        return config.WEAK
-    return config.NEUTRAL
+    return bands_store.classify(rsi)
