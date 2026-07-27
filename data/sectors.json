@@ -1,0 +1,70 @@
+{
+  "BANKNIFTY": [
+    "BANKNIFTY",
+    "NSE"
+  ],
+  "CNXAUTO": [
+    "CNXAUTO",
+    "NSE"
+  ],
+  "CNXCOMMODITIES": [
+    "CNXCOMMODITIES",
+    "NSE"
+  ],
+  "CNXCONSUMPTION": [
+    "CNXCONSUMPTION",
+    "NSE"
+  ],
+  "CNXENERGY": [
+    "CNXENERGY",
+    "NSE"
+  ],
+  "CNXFINANCE": [
+    "CNXFINANCE",
+    "NSE"
+  ],
+  "CNXFMCG": [
+    "CNXFMCG",
+    "NSE"
+  ],
+  "CNXINFRA": [
+    "CNXINFRA",
+    "NSE"
+  ],
+  "CNXIT": [
+    "CNXIT",
+    "NSE"
+  ],
+  "CNXMEDIA": [
+    "CNXMEDIA",
+    "NSE"
+  ],
+  "CNXMETAL": [
+    "CNXMETAL",
+    "NSE"
+  ],
+  "CNXPHARMA": [
+    "CNXPHARMA",
+    "NSE"
+  ],
+  "CNXPSE": [
+    "CNXPSE",
+    "NSE"
+  ],
+  "CNXPSUBANK": [
+    "CNXPSUBANK",
+    "NSE"
+  ],
+  "CNXREALTY": [
+    "CNXREALTY",
+    "NSE"
+  ],
+  "CNXSERVICE": [
+    "CNXSERVICE",
+    "NSE"
+  ],
+  "NIFTYPVTBANK": [
+    "NIFTYPVTBANK",
+    "NSE"
+  ]
+}

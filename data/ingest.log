@@ -1,0 +1,72 @@
+2026-07-14 23:05:06,927 INFO === ingest run started at 2026-07-14T17:35:06.927598+00:00 ===
+2026-07-14 23:05:06,928 WARNING you are using nologin method, data you access may be limited
+2026-07-14 23:05:07,728 INFO fetched CNXMETAL 1D via tvdatafeed: 2974 rows
+2026-07-14 23:05:07,995 INFO fetched CNXMETAL 1W via tvdatafeed: 758 rows
+2026-07-14 23:05:08,441 INFO fetched CNXMETAL 1M via tvdatafeed: 155 rows
+2026-07-14 23:05:09,321 INFO fetched CNXPHARMA 1D via tvdatafeed: 2974 rows
+2026-07-14 23:05:09,754 INFO fetched CNXPHARMA 1W via tvdatafeed: 1307 rows
+2026-07-14 23:05:10,070 INFO fetched CNXPHARMA 1M via tvdatafeed: 281 rows
+2026-07-14 23:05:10,072 INFO === ingest run finished, 8449 rows upserted ===
+2026-07-27 23:04:32,064 INFO === ingest run started at 2026-07-27T17:34:32.064863+00:00 ===
+2026-07-27 23:04:32,065 WARNING you are using nologin method, data you access may be limited
+2026-07-27 23:04:32,997 INFO fetched CNXMETAL 1D via tvdatafeed: 2974 rows
+2026-07-27 23:04:33,474 INFO fetched CNXMETAL 1W via tvdatafeed: 760 rows
+2026-07-27 23:04:33,851 INFO fetched CNXMETAL 1M via tvdatafeed: 155 rows
+2026-07-27 23:04:34,824 INFO fetched CNXPHARMA 1D via tvdatafeed: 2974 rows
+2026-07-27 23:04:35,459 INFO fetched CNXPHARMA 1W via tvdatafeed: 1309 rows
+2026-07-27 23:04:35,898 INFO fetched CNXPHARMA 1M via tvdatafeed: 281 rows
+2026-07-27 23:04:35,900 INFO === ingest run finished, 8453 rows upserted ===
+2026-07-27 23:11:55,301 INFO === ingest run started at 2026-07-27T17:41:55.301262+00:00 ===
+2026-07-27 23:11:55,301 WARNING you are using nologin method, data you access may be limited
+2026-07-27 23:11:56,350 INFO fetched CNXMETAL 1D via tvdatafeed: 2974 rows
+2026-07-27 23:11:56,867 INFO fetched CNXMETAL 1W via tvdatafeed: 760 rows
+2026-07-27 23:11:57,892 INFO fetched CNXMETAL 1M via tvdatafeed: 155 rows
+2026-07-27 23:11:58,955 INFO fetched CNXPHARMA 1D via tvdatafeed: 2974 rows
+2026-07-27 23:11:59,625 INFO fetched CNXPHARMA 1W via tvdatafeed: 1309 rows
+2026-07-27 23:12:00,100 INFO fetched CNXPHARMA 1M via tvdatafeed: 281 rows
+2026-07-27 23:12:01,546 INFO fetched CNXAUTO 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:02,527 INFO fetched CNXAUTO 1W via tvdatafeed: 1153 rows
+2026-07-27 23:12:03,247 INFO fetched CNXAUTO 1M via tvdatafeed: 245 rows
+2026-07-27 23:12:04,111 INFO fetched BANKNIFTY 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:04,717 INFO fetched BANKNIFTY 1W via tvdatafeed: 1361 rows
+2026-07-27 23:12:05,138 INFO fetched BANKNIFTY 1M via tvdatafeed: 293 rows
+2026-07-27 23:12:06,107 INFO fetched CNXENERGY 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:07,262 INFO fetched CNXENERGY 1W via tvdatafeed: 1309 rows
+2026-07-27 23:12:07,665 INFO fetched CNXENERGY 1M via tvdatafeed: 281 rows
+2026-07-27 23:12:08,698 INFO fetched CNXFMCG 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:09,345 INFO fetched CNXFMCG 1W via tvdatafeed: 1474 rows
+2026-07-27 23:12:09,819 INFO fetched CNXFMCG 1M via tvdatafeed: 341 rows
+2026-07-27 23:12:10,753 INFO fetched CNXIT 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:11,743 INFO fetched CNXIT 1W via tvdatafeed: 1474 rows
+2026-07-27 23:12:12,178 INFO fetched CNXIT 1M via tvdatafeed: 341 rows
+2026-07-27 23:12:12,948 INFO fetched CNXMEDIA 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:13,569 INFO fetched CNXMEDIA 1W via tvdatafeed: 1049 rows
+2026-07-27 23:12:14,376 INFO fetched CNXMEDIA 1M via tvdatafeed: 222 rows
+2026-07-27 23:12:15,223 INFO fetched CNXPSUBANK 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:15,771 INFO fetched CNXPSUBANK 1W via tvdatafeed: 1152 rows
+2026-07-27 23:12:16,226 INFO fetched CNXPSUBANK 1M via tvdatafeed: 245 rows
+2026-07-27 23:12:17,111 INFO fetched CNXREALTY 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:17,977 INFO fetched CNXREALTY 1W via tvdatafeed: 997 rows
+2026-07-27 23:12:18,738 INFO fetched CNXREALTY 1M via tvdatafeed: 210 rows
+2026-07-27 23:12:19,870 INFO fetched CNXINFRA 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:20,427 INFO fetched CNXINFRA 1W via tvdatafeed: 1153 rows
+2026-07-27 23:12:20,816 INFO fetched CNXINFRA 1M via tvdatafeed: 245 rows
+2026-07-27 23:12:21,737 INFO fetched CNXFINANCE 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:22,277 INFO fetched CNXFINANCE 1W via tvdatafeed: 752 rows
+2026-07-27 23:12:22,734 INFO fetched CNXFINANCE 1M via tvdatafeed: 153 rows
+2026-07-27 23:12:23,645 INFO fetched NIFTYPVTBANK 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:24,263 INFO fetched NIFTYPVTBANK 1W via tvdatafeed: 1088 rows
+2026-07-27 23:12:24,685 INFO fetched NIFTYPVTBANK 1M via tvdatafeed: 230 rows
+2026-07-27 23:12:25,466 INFO fetched CNXCOMMODITIES 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:26,047 INFO fetched CNXCOMMODITIES 1W via tvdatafeed: 1153 rows
+2026-07-27 23:12:26,820 INFO fetched CNXCOMMODITIES 1M via tvdatafeed: 245 rows
+2026-07-27 23:12:27,705 INFO fetched CNXCONSUMPTION 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:28,283 INFO fetched CNXCONSUMPTION 1W via tvdatafeed: 1048 rows
+2026-07-27 23:12:28,968 INFO fetched CNXCONSUMPTION 1M via tvdatafeed: 221 rows
+2026-07-27 23:12:29,889 INFO fetched CNXPSE 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:30,490 INFO fetched CNXPSE 1W via tvdatafeed: 1474 rows
+2026-07-27 23:12:30,937 INFO fetched CNXPSE 1M via tvdatafeed: 353 rows
+2026-07-27 23:12:32,098 INFO fetched CNXSERVICE 1D via tvdatafeed: 2974 rows
+2026-07-27 23:12:32,705 INFO fetched CNXSERVICE 1W via tvdatafeed: 1392 rows
+2026-07-27 23:12:33,149 INFO fetched CNXSERVICE 1M via tvdatafeed: 300 rows
+2026-07-27 23:12:33,153 INFO === ingest run finished, 75017 rows upserted ===

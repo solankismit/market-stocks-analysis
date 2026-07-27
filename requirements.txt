@@ -1,0 +1,7 @@
+pandas
+streamlit
+plotly
+certifi
+websocket-client
+requests
+git+https://github.com/rongardF/tvdatafeed.git
