@@ -207,7 +207,9 @@ all_latest["classification"] = all_latest["rsi"].apply(classify)
 sectors = sorted(all_latest["sector"].unique())
 cell_lookup = {(r["sector"], r["timeframe"]): r for _, r in all_latest.iterrows()}
 
-st.title("Sector Strength Dashboard")
+title_col, button_col = st.columns([5, 1])
+title_col.title("Sector Strength Dashboard")
+refresh_clicked = button_col.button("🔄 Refresh data now", help="Fetch the latest Daily/Weekly/Monthly bars for every tracked sector")
 
 as_of_by_tf = {
     tf: all_latest.loc[all_latest["timeframe"] == tf, "date"].max()
@@ -215,6 +217,23 @@ as_of_by_tf = {
     if (all_latest["timeframe"] == tf).any()
 }
 st.caption("As of — " + " | ".join(f"{tf_names[tf]}: {d.date()}" for tf, d in as_of_by_tf.items()))
+
+if refresh_clicked:
+    conn = db.get_connection()
+    progress = st.progress(0.0)
+    status = st.empty()
+    items = list(active_sectors.items())
+    for i, (name, (sym, exch)) in enumerate(items):
+        status.caption(f"Fetching {name}...")
+        for tf in config.TIMEFRAMES:
+            ingest_one(conn, name, sym, exch, tf)
+        progress.progress((i + 1) / len(items))
+    conn.close()
+    status.empty()
+    progress.empty()
+    st.cache_data.clear()
+    st.success("Data refreshed.")
+    st.rerun()
 
 # ---------------------------------------------------------------------------
 # Monthly-Weekly-Daily pattern filter
@@ -380,7 +399,7 @@ else:
             color = BAND_COLORS.get(r["classification"], "#888")
             day_table_html += (
                 f'<td style="background:{color}2b; border-left:4px solid {color}; white-space:normal;">'
-                f'RSI {r["rsi"]:.2f} &nbsp; ADX {r["adx"]:.2f}'
+                f'RSI {r["rsi"]:.2f} &nbsp; {adx_html(r["adx"])}'
                 f'<br/><span style="opacity:0.75;">{r["classification"]}</span>'
                 f'</td>'
             )
